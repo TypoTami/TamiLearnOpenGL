@@ -106,78 +106,45 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    float triA[] = {
-            -0.5f / 2.0f - 0.5, -0.5f, 0.0f, // left
-            0.5f / 2.0f - 0.5, -0.5f, 0.0f, // right
-            0.0f / 2.0f - 0.5, 0.75f, 0.0f,  // top
-    };
-    float triB[] = {
-            -0.5f / 2.0f +0.5, -0.5f, 0.0f, // left
-            0.5f / 2.0f +0.5, -0.5f, 0.0f, // right
-            0.0f / 2.0f +0.5,  0.75f, 0.0f,  // top
-    };
-
-    float vertices[] = {
-            0.5f,  0.5f, 0.0f,  // top right
-            0.5f, -0.5f, 0.0f,  // bottom right
-            -0.5f, -0.5f, 0.0f,  // bottom left
-            -0.5f,  0.5f, 0.0f   // top left
-    };
-    unsigned int indices[] = {  // note that we start from 0!
-            0, 1, 3,   // first triangle
-            1, 2, 3    // second triangle
-    };
-
-    unsigned int triVBO_A;
-    unsigned int triVBO_B;
-    unsigned int triVAO_A;
-    unsigned int triVAO_B;
-
-    glGenVertexArrays(1, &triVAO_A);
-    glGenVertexArrays(1, &triVAO_B);
-    glGenBuffers(1, &triVBO_A);
-    glGenBuffers(1, &triVBO_B);
-
-
-    glBindVertexArray(triVAO_A);
-    glBindBuffer(GL_ARRAY_BUFFER, triVBO_A);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triA), triA, GL_STATIC_DRAW);
-    // Tell OpenGL how the vertex data should be interpreted
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
-    glEnableVertexAttribArray(0);
-
-    glBindVertexArray(triVAO_B);
-    glBindBuffer(GL_ARRAY_BUFFER, triVBO_B);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triB), triB, GL_STATIC_DRAW);
-    // Tell OpenGL how the vertex data should be interpreted
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
-    glEnableVertexAttribArray(0);
-
-
     // -------- VERTEX INPUT
+    // Define vertices
+
+    float vertices[2][9] = {
+            {
+                    -0.5f / 2.0f - 0.5, -0.5f, 0.0f, // left
+                    0.5f / 2.0f - 0.5, -0.5f, 0.0f, // right
+                    0.0f / 2.0f - 0.5, 0.75f, 0.0f,  // top
+                },
+            {
+                    -0.5f / 2.0f +0.5, -0.5f, 0.0f, // left
+                    0.5f / 2.0f +0.5, -0.5f, 0.0f, // right
+                    0.0f / 2.0f +0.5,  0.75f, 0.0f,  // top
+            }
+    };
+
     // Create a VERTEX BUFFER OBJECT for GPU memory management
     // Create a Vertex Array Object (VAO)
     // Create an Element Buffer Object (EBO)
-    unsigned int VBO;
-    unsigned int VAO;
     unsigned int EBO;
-//    glGenVertexArrays(1, &VAO);
-//    glGenBuffers(1, &VBO);
+    unsigned int VBOs[2];
+    unsigned int VAOs[2];
+
+    glGenVertexArrays(2, VAOs);
+    glGenBuffers(2, VBOs);
     glGenBuffers(1, &EBO);
-    // Bind VAO
-//    glBindVertexArray(VAO);
 
-    // Bind the buffer to GL_ARRAY_BUFFER
-    // Than copy vertices into the VBO that has been bound to GL_ARRAY_BUFFER
-    // GL_STATIC_DRAW defines that the data is set once and used many times
-
-//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    // After which copy indices into the EBO in a similar fashion
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
+    for (int i = 0; i < std::size(vertices); i++) {
+        // Bind VAOs
+        glBindVertexArray(VAOs[i]);
+        // Bind the buffer to GL_ARRAY_BUFFER
+        // Than copy vertices into the VBO that has been bound to GL_ARRAY_BUFFER
+        // GL_STATIC_DRAW defines that the data is set once and used many times
+        glBindBuffer(GL_ARRAY_BUFFER, VBOs[i]);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[i]), vertices[i], GL_STATIC_DRAW);
+        // Tell OpenGL how the vertex data should be interpreted
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
+        glEnableVertexAttribArray(0);
+    }
 
     // Framerate/Frametiming
     double t_0 = glfwGetTime();
@@ -211,17 +178,23 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
         // Activate the program
         glUseProgram(shaderProgram);
-        // Draw our object
-        glBindVertexArray(triVAO_A);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glBindVertexArray(triVAO_B);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        // Draw our triangles
+
+        for (int i = 0; i < std::size(VAOs); i++) {
+            glBindVertexArray(VAOs[i]);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
 
         // Check and call events, afterward swap buffers
         glfwPollEvents();
         glfwSwapBuffers(window);
     }
+
+    glDeleteVertexArrays(2, VAOs);
+    glDeleteBuffers(2, VBOs);
+    glDeleteProgram(shaderProgram);
+
+    glfwTerminate();
 
     return 0;
 }
