@@ -48,8 +48,12 @@ int main() {
     // Shaders
     std::string vertexShaderString = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\tri.glsl)");
     std::string fragmentShaderString = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\tri.frag)");
+    std::string fragmentShaderStringYellow = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\triYellow.frag)");
     const char* vertexShaderSource = vertexShaderString.c_str();
-    const char* fragmentShaderSource = fragmentShaderString.c_str();
+    const char* fragmentShaderSource[2] = {
+            fragmentShaderString.c_str(),
+            fragmentShaderStringYellow.c_str()
+    };
     int  success;
     char infoLog[512];
 
@@ -72,39 +76,49 @@ int main() {
     }
 
     // -------- COMPILING A FRAGMENT SHADER
-    unsigned int fragmentShader;
-    fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    unsigned int fragmentShaders[2];
 
-    // Attach shader source to the shader object, then compile
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
+    for (int i = 0; i < std::size(fragmentShaders); i++) {
+        fragmentShaders[i] = glCreateShader(GL_FRAGMENT_SHADER);
 
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+        // Attach shader source to the shader object, then compile
+        glShaderSource(fragmentShaders[i], 1, &fragmentShaderSource[i], NULL);
+        glCompileShader(fragmentShaders[i]);
 
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        glGetShaderiv(fragmentShaders[i], GL_COMPILE_STATUS, &success);
+
+        if (!success) {
+            glGetShaderInfoLog(fragmentShaders[i], 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        }
     }
 
     // -------- SHADER PROGRAM
     // Create a shader program and store the ID reference to the new program
-    unsigned int shaderProgram;
-    shaderProgram = glCreateProgram();
+    unsigned int shaderPrograms[2] = {
+            glCreateProgram(),
+            glCreateProgram()
+    };
 
-    // Attach our shaders to the program and then link it before compiling
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    for (int i = 0; i < std::size(shaderPrograms); i++) {
+        // Attach our shaders to the program and then link it before compiling
+        glAttachShader(shaderPrograms[i], vertexShader);
+        glAttachShader(shaderPrograms[i], fragmentShaders[i]);
 
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER_PROGRAM::LINKER::LINK_FAILED\n" << infoLog << std::endl;
+        glLinkProgram(shaderPrograms[i]);
+
+        glGetProgramiv(shaderPrograms[i], GL_LINK_STATUS, &success);
+        if (!success) {
+            glGetProgramInfoLog(shaderPrograms[i], 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER_PROGRAM::LINKER::LINK_FAILED\n" << infoLog << std::endl;
+        }
     }
 
     // Delete the shaders not needed anymore
     glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    for (unsigned int & fragmentShader : fragmentShaders) {
+        glDeleteShader(fragmentShader);
+    }
 
     // -------- VERTEX INPUT
     // Define vertices
@@ -176,11 +190,11 @@ int main() {
         // Rendering logic
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        // Activate the program
-        glUseProgram(shaderProgram);
-        // Draw our triangles
 
         for (int i = 0; i < std::size(VAOs); i++) {
+            // Activate the program
+            glUseProgram(shaderPrograms[i]);
+            // Draw our triangles
             glBindVertexArray(VAOs[i]);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
@@ -192,7 +206,9 @@ int main() {
 
     glDeleteVertexArrays(2, VAOs);
     glDeleteBuffers(2, VBOs);
-    glDeleteProgram(shaderProgram);
+    for (int i = 0; i < std::size(shaderPrograms); i++) {
+        glDeleteProgram(shaderPrograms[i]);
+    }
 
     glfwTerminate();
 
