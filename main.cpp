@@ -106,6 +106,15 @@ int main() {
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    float triS[] = {
+            -0.5f / 2.0f -0.5, -0.5f, 0.0f, // left
+            0.5f / 2.0f -0.5, -0.5f, 0.0f, // right
+            0.0f / 2.0f -0.5,  0.75f, 0.0f,  // top
+            -0.5f / 2.0f +0.5, -0.5f, 0.0f, // left
+            0.5f / 2.0f +0.5, -0.5f, 0.0f, // right
+            0.0f / 2.0f +0.5,  0.75f, 0.0f,  // top
+    };
+
     float vertices[] = {
             0.5f,  0.5f, 0.0f,  // top right
             0.5f, -0.5f, 0.0f,  // bottom right
@@ -117,11 +126,16 @@ int main() {
             1, 2, 3    // second triangle
     };
 
+    unsigned int triVBO;
+    glGenBuffers(1, &triVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, triVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(triS), triS, GL_STATIC_DRAW);
+
 
     // -------- VERTEX INPUT
     // Create a VERTEX BUFFER OBJECT for GPU memory management
     // Create a Vertex Array Object (VAO)
-    // Create a Element Buffer Object (EBO)
+    // Create an Element Buffer Object (EBO)
     unsigned int VBO;
     unsigned int VAO;
     unsigned int EBO;
@@ -132,10 +146,10 @@ int main() {
     glBindVertexArray(VAO);
 
     // Bind the buffer to GL_ARRAY_BUFFER
-    // Then copy vertices into the VBO that has been bound to GL_ARRAY_BUFFER
+    // Than copy vertices into the VBO that has been bound to GL_ARRAY_BUFFER
     // GL_STATIC_DRAW defines that the data is set once and used many times
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+//    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     // After which copy indices into the EBO in a similar fashion
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
@@ -177,8 +191,8 @@ int main() {
         // Activate the program
         glUseProgram(shaderProgram);
         // Draw our object
-//        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+//        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Check and call events, afterward swap buffers
         glfwPollEvents();
