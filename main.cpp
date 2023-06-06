@@ -1,3 +1,4 @@
+#include <cmath>
 #include <format>
 #include <iostream>
 #include <fstream>
@@ -5,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <sstream>
 #include <filesystem>
+#include <valarray>
 
 // Prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -52,11 +54,9 @@ int main() {
     // Shaders
     std::string vertexShaderString = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\tri.glsl)");
     std::string fragmentShaderString = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\tri.frag)");
-    std::string fragmentShaderStringYellow = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\triYellow.frag)");
     const char* vertexShaderSource = vertexShaderString.c_str();
-    const char* fragmentShaderSource[2] = {
-            fragmentShaderString.c_str(),
-            fragmentShaderStringYellow.c_str()
+    const char* fragmentShaderSource[1] = {
+            fragmentShaderString.c_str()
     };
     int  success;
     char infoLog[512];
@@ -80,7 +80,7 @@ int main() {
     }
 
     // -------- COMPILING A FRAGMENT SHADER
-    unsigned int fragmentShaders[2];
+    unsigned int fragmentShaders[1];
 
     for (int i = 0; i < std::size(fragmentShaders); i++) {
         fragmentShaders[i] = glCreateShader(GL_FRAGMENT_SHADER);
@@ -99,8 +99,7 @@ int main() {
 
     // -------- SHADER PROGRAM
     // Create a shader program and store the ID reference to the new program
-    unsigned int shaderPrograms[2] = {
-            glCreateProgram(),
+    unsigned int shaderPrograms[1] = {
             glCreateProgram()
     };
 
@@ -127,28 +126,23 @@ int main() {
     // -------- VERTEX INPUT
     // Define vertices
 
-    float vertices[2][9] = {
+    float vertices[1][9] = {
             {
-                    -0.5f / 2.0f - 0.5, -0.5f, 0.0f, // left
-                    0.5f / 2.0f - 0.5, -0.5f, 0.0f, // right
-                    0.0f / 2.0f - 0.5, 0.75f, 0.0f,  // top
-                },
-            {
-                    -0.5f / 2.0f +0.5, -0.5f, 0.0f, // left
-                    0.5f / 2.0f +0.5, -0.5f, 0.0f, // right
-                    0.0f / 2.0f +0.5,  0.75f, 0.0f,  // top
-            }
+                    -0.5f, -0.5f, 0.0f, // left
+                    0.5f, -0.5f, 0.0f, // right
+                    0.0f, 0.75f, 0.0f,  // top
+                }
     };
 
     // Create a VERTEX BUFFER OBJECT for GPU memory management
     // Create a Vertex Array Object (VAO)
     // Create an Element Buffer Object (EBO)
     unsigned int EBO;
-    unsigned int VBOs[2];
-    unsigned int VAOs[2];
+    unsigned int VBOs[1];
+    unsigned int VAOs[1];
 
-    glGenVertexArrays(2, VAOs);
-    glGenBuffers(2, VBOs);
+    glGenVertexArrays(1, VAOs);
+    glGenBuffers(1, VBOs);
     glGenBuffers(1, &EBO);
 
     for (int i = 0; i < std::size(vertices); i++) {
@@ -195,9 +189,14 @@ int main() {
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        float timeValue = glfwGetTime();
+        float greenValue = (std::sin(timeValue) /2.0f) + 0.5f;
+
         for (int i = 0; i < std::size(VAOs); i++) {
+            int vertexColourLocation = glGetUniformLocation(shaderPrograms[i], "ourColour");
             // Activate the program
             glUseProgram(shaderPrograms[i]);
+            glUniform4f(vertexColourLocation, 0.0f, greenValue, 0.0f, 1.0f);
             // Draw our triangles
             glBindVertexArray(VAOs[i]);
             glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -208,8 +207,8 @@ int main() {
         glfwSwapBuffers(window);
     }
 
-    glDeleteVertexArrays(2, VAOs);
-    glDeleteBuffers(2, VBOs);
+    glDeleteVertexArrays(1, VAOs);
+    glDeleteBuffers(1, VBOs);
     for (unsigned int shaderProgram : shaderPrograms) {
         glDeleteProgram(shaderProgram);
     }
