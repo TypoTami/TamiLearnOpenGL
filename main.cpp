@@ -117,6 +117,7 @@ int main() {
         }
     }
 
+
     // Delete the shaders not needed anymore
     glDeleteShader(vertexShader);
     for (unsigned int & fragmentShader : fragmentShaders) {
@@ -126,12 +127,12 @@ int main() {
     // -------- VERTEX INPUT
     // Define vertices
 
-    float vertices[1][9] = {
+    float vertices[1][18] = {
             {
-                    -0.5f, -0.5f, 0.0f, // left
-                    0.5f, -0.5f, 0.0f, // right
-                    0.0f, 0.75f, 0.0f,  // top
-                }
+                -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // left
+                0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // right
+                0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // top
+            }
     };
 
     // Create a VERTEX BUFFER OBJECT for GPU memory management
@@ -154,8 +155,12 @@ int main() {
         glBindBuffer(GL_ARRAY_BUFFER, VBOs[i]);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[i]), vertices[i], GL_STATIC_DRAW);
         // Tell OpenGL how the vertex data should be interpreted
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)nullptr);
+        // - Position attribute
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
         glEnableVertexAttribArray(0);
+        // - Colour attribute
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
     }
 
     // Framerate/Frametiming
@@ -186,17 +191,13 @@ int main() {
         processInput(window);
 
         // Rendering logic
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.2f, 0.2, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        float timeValue = glfwGetTime();
-        float greenValue = (std::sin(timeValue) /2.0f) + 0.5f;
 
         for (int i = 0; i < std::size(VAOs); i++) {
             int vertexColourLocation = glGetUniformLocation(shaderPrograms[i], "ourColour");
             // Activate the program
             glUseProgram(shaderPrograms[i]);
-            glUniform4f(vertexColourLocation, 0.0f, greenValue, 0.0f, 1.0f);
             // Draw our triangles
             glBindVertexArray(VAOs[i]);
             glDrawArrays(GL_TRIANGLES, 0, 3);
