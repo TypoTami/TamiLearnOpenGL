@@ -1,19 +1,13 @@
-#include <cmath>
 #include <format>
-#include <iostream>
-#include <fstream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <sstream>
 #include <filesystem>
-#include <valarray>
+#include "shader.h"
 
 // Prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 void processInput(GLFWwindow *window);
-
-std::string loadShader(const std::string& filepath);
 
 // Main
 int main() {
@@ -52,77 +46,10 @@ int main() {
 
 
     // Shaders
-    std::string vertexShaderString = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\tri.glsl)");
-    std::string fragmentShaderString = loadShader(R"(D:\CLionProjects\TamiOpenGL\shaders\tri.frag)");
-    const char* vertexShaderSource = vertexShaderString.c_str();
-    const char* fragmentShaderSource[1] = {
-            fragmentShaderString.c_str()
-    };
-    int  success;
-    char infoLog[512];
-
-
-    // -------- COMPILING A VERTEX SHADER
-    // Create a shader object
-    // GL_VERTEX_SHADER defined as we are creating a vertex shader
-    unsigned int vertexShader;
-    vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    // Attach shader source to the shader object, then compile
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
-    glCompileShader(vertexShader);
-
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-
-    // -------- COMPILING A FRAGMENT SHADER
-    unsigned int fragmentShaders[1];
-
-    for (int i = 0; i < std::size(fragmentShaders); i++) {
-        fragmentShaders[i] = glCreateShader(GL_FRAGMENT_SHADER);
-
-        // Attach shader source to the shader object, then compile
-        glShaderSource(fragmentShaders[i], 1, &fragmentShaderSource[i], nullptr);
-        glCompileShader(fragmentShaders[i]);
-
-        glGetShaderiv(fragmentShaders[i], GL_COMPILE_STATUS, &success);
-
-        if (!success) {
-            glGetShaderInfoLog(fragmentShaders[i], 512, nullptr, infoLog);
-            std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-        }
-    }
-
-    // -------- SHADER PROGRAM
-    // Create a shader program and store the ID reference to the new program
-    unsigned int shaderPrograms[1] = {
-            glCreateProgram()
-    };
-
-    for (int i = 0; i < std::size(shaderPrograms); i++) {
-        // Attach our shaders to the program and then link it before compiling
-        glAttachShader(shaderPrograms[i], vertexShader);
-        glAttachShader(shaderPrograms[i], fragmentShaders[i]);
-
-        glLinkProgram(shaderPrograms[i]);
-
-        glGetProgramiv(shaderPrograms[i], GL_LINK_STATUS, &success);
-        if (!success) {
-            glGetProgramInfoLog(shaderPrograms[i], 512, nullptr, infoLog);
-            std::cout << "ERROR::SHADER_PROGRAM::LINKER::LINK_FAILED\n" << infoLog << std::endl;
-        }
-    }
-
-
-    // Delete the shaders not needed anymore
-    glDeleteShader(vertexShader);
-    for (unsigned int & fragmentShader : fragmentShaders) {
-        glDeleteShader(fragmentShader);
-    }
+    Shader ourShader(
+            R"(D:\CLionProjects\TamiOpenGL\shaders\tri.glsl)",
+            R"(D:\CLionProjects\TamiOpenGL\shaders\tri.frag)"
+            );
 
     // -------- VERTEX INPUT
     // Define vertices
@@ -195,9 +122,8 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         for (int i = 0; i < std::size(VAOs); i++) {
-            int vertexColourLocation = glGetUniformLocation(shaderPrograms[i], "ourColour");
             // Activate the program
-            glUseProgram(shaderPrograms[i]);
+            ourShader.use();
             // Draw our triangles
             glBindVertexArray(VAOs[i]);
             glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -210,9 +136,6 @@ int main() {
 
     glDeleteVertexArrays(1, VAOs);
     glDeleteBuffers(1, VBOs);
-    for (unsigned int shaderProgram : shaderPrograms) {
-        glDeleteProgram(shaderProgram);
-    }
 
     glfwTerminate();
 
@@ -232,15 +155,4 @@ void processInput(GLFWwindow *window) {
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-// Load shader from file
-std::string loadShader(const std::string& filepath) {
-    std::ifstream file {filepath};
-    std::stringstream buffer;
-
-    buffer << file.rdbuf();
-    std::string source = buffer.str();
-
-    return source;
 }

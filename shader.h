@@ -19,6 +19,8 @@ public:
 
     // Constructor reads the shaders and builds it
     Shader(const char* vertexPath, const char* fragmentPath);
+    // Destructor
+    ~Shader();
     // use this shader
     void use();
     // utility functions
@@ -121,6 +123,10 @@ void Shader::setInt(const std::string &name, int value) const {
 
 void Shader::setFloat(const std::string &name, float value) const {
     glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
+}
+
+Shader::~Shader() {
+    glDeleteProgram(ID);
 }
 
 #endif //TAMIOPENGL_SHADER_H
