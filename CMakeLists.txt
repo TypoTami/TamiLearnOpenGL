@@ -11,6 +11,6 @@ add_executable(
         main.cpp
         main.cpp.h
         glad/src/glad.c
-)
+        shader.h)
 
 target_link_libraries(TamiOpenGL glfw)
