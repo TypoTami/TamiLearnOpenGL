@@ -17,10 +17,16 @@ public:
     // Program ID;
     unsigned int ID;
 
+    // Paths
+    const char *vertexPath;
+    const char *fragmentPath;
+
     // Constructor reads the shaders and builds it
     Shader(const char* vertexPath, const char* fragmentPath);
     // Destructor
     ~Shader();
+    // update this shader
+    void update();
     // use this shader
     void use();
     // utility functions
@@ -29,7 +35,15 @@ public:
     void setFloat(const std::string &name, float value) const;
 };
 
-Shader::Shader(const char *vertexPath, const char *fragmentPath) {
+Shader::Shader(const char *vertexPathIn, const char *fragmentPathIn) {
+    vertexPath = vertexPathIn;
+    fragmentPath = fragmentPathIn;
+    update();
+}
+
+void Shader::update() {
+    glDeleteProgram(ID);
+
     // 1. Load shaders from disk
     std::string vertexShaderSource;
     std::string fragmentShaderSource;

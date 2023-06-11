@@ -7,7 +7,7 @@
 // Prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, Shader &shader);
 
 // Main
 int main() {
@@ -115,17 +115,17 @@ int main() {
         t_0 = t_1;
 
         // Input
-        processInput(window);
+        processInput(window, ourShader);
 
         // Rendering logic
         glClearColor(0.2f, 0.2, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for (int i = 0; i < std::size(VAOs); i++) {
+        for (unsigned int VAO : VAOs) {
             // Activate the program
             ourShader.use();
             // Draw our triangles
-            glBindVertexArray(VAOs[i]);
+            glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
         }
 
@@ -148,9 +148,12 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 // Input processing
-void processInput(GLFWwindow *window) {
+void processInput(GLFWwindow *window, Shader &shader) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
+        shader.update();
+    }
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     else if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)

@@ -9,7 +9,6 @@ include_directories(glad/include)
 add_executable(
         TamiOpenGL
         main.cpp
-        main.cpp.h
         glad/src/glad.c
         shader.h)
 
