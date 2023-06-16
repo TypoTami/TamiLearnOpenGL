@@ -2,6 +2,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <filesystem>
+#include <thread>
+#include "include/stb_image.h"
 #include "shader.h"
 
 // Prototypes
@@ -54,42 +56,75 @@ int main() {
     // -------- VERTEX INPUT
     // Define vertices
 
-    float vertices[1][18] = {
-            {
-                -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // left
-                0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // right
-                0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f  // top
-            }
+    float vertices[] = {
+            // positions          // colors           // texture coords
+            0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+            0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+            -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
+    };
+
+    unsigned int indices[] = {
+            0, 1, 3,
+            1, 2, 3
     };
 
     // Create a VERTEX BUFFER OBJECT for GPU memory management
     // Create a Vertex Array Object (VAO)
     // Create an Element Buffer Object (EBO)
     unsigned int EBO;
-    unsigned int VBOs[1];
-    unsigned int VAOs[1];
+    unsigned int VBO;
+    unsigned int VAO;
 
-    glGenVertexArrays(1, VAOs);
-    glGenBuffers(1, VBOs);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
-    for (int i = 0; i < std::size(vertices); i++) {
-        // Bind VAOs
-        glBindVertexArray(VAOs[i]);
-        // Bind the buffer to GL_ARRAY_BUFFER
-        // Than copy vertices into the VBO that has been bound to GL_ARRAY_BUFFER
-        // GL_STATIC_DRAW defines that the data is set once and used many times
-        glBindBuffer(GL_ARRAY_BUFFER, VBOs[i]);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[i]), vertices[i], GL_STATIC_DRAW);
-        // Tell OpenGL how the vertex data should be interpreted
-        // - Position attribute
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)nullptr);
-        glEnableVertexAttribArray(0);
-        // - Colour attribute
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-    }
 
+    // Bind VAOs
+    glBindVertexArray(VAO);
+    // Bind the buffer to GL_ARRAY_BUFFER
+    // Than copy vertices into the VBO that has been bound to GL_ARRAY_BUFFER
+    // GL_STATIC_DRAW defines that the data is set once and used many times
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // Bind EBOs
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    // Tell OpenGL how the vertex data should be interpreted
+    // - Position attribute     X, Y, Z
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)nullptr);
+    glEnableVertexAttribArray(0);
+    // - Colour attribute       R, G, B
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    // - TexCoords attribute    S, T
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 *sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
+    // -------- TEXTURES
+    // Generate texture
+    unsigned int texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // set wrapping + filtering options on the current object bound to the GL_TEXTURE_2D target
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Load image
+    int width, height, nrChannels;
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load(R"(D:\CLionProjects\TamiOpenGL\pain.jpg)", &width, &height, &nrChannels, 0);
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    } else {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+
+    // -------- RENDERING
     // Framerate/Frametiming
     double t_0 = glfwGetTime();
     double t_1;
@@ -118,24 +153,31 @@ int main() {
         processInput(window, ourShader);
 
         // Rendering logic
-        glClearColor(0.2f, 0.2, 0.2f, 1.0f);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for (unsigned int VAO : VAOs) {
-            // Activate the program
-            ourShader.use();
-            // Draw our triangles
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 3);
-        }
+        // Bind textures to texture units
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        // Activate the program
+        ourShader.use();
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+//            glBindVertexArray(VAO);
+//            glDrawArrays(GL_TRIANGLES, 0, 3);
 
         // Check and call events, afterward swap buffers
-        glfwPollEvents();
         glfwSwapBuffers(window);
+        glfwPollEvents();
+
+        // Scuffed as heck
+        std::this_thread::sleep_for(std::chrono::milliseconds((100/(int)60)));
     }
 
-    glDeleteVertexArrays(1, VAOs);
-    glDeleteBuffers(1, VBOs);
+    glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteBuffers(1, &EBO);
 
     glfwTerminate();
 
