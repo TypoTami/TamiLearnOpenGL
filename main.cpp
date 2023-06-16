@@ -2,6 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <filesystem>
+#include <thread>
 #include "shader.h"
 
 // Prototypes
@@ -111,8 +112,9 @@ int main() {
                 framerate
         );
 
-        glfwSetWindowTitle(window, title.c_str());
         t_0 = t_1;
+
+        glfwSetWindowTitle(window, title.c_str());
 
         // Input
         processInput(window, ourShader);
@@ -121,9 +123,11 @@ int main() {
         glClearColor(0.2f, 0.2, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for (unsigned int VAO : VAOs) {
+        for (unsigned int VAO: VAOs) {
             // Activate the program
             ourShader.use();
+            // Configure Uniforms
+            ourShader.setFloat("offset", 0.25f);
             // Draw our triangles
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -132,6 +136,9 @@ int main() {
         // Check and call events, afterward swap buffers
         glfwPollEvents();
         glfwSwapBuffers(window);
+
+        // Scuffed as heck
+        std::this_thread::sleep_for(std::chrono::milliseconds((100/(int)60)));
     }
 
     glDeleteVertexArrays(1, VAOs);
