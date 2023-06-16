@@ -127,7 +127,7 @@ int main() {
             // Activate the program
             ourShader.use();
             // Configure Uniforms
-            ourShader.setFloat("offset", 0.25f);
+
             // Draw our triangles
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 3);
