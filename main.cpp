@@ -9,7 +9,7 @@
 // Prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
-void processInput(GLFWwindow *window, Shader &shader);
+void processInput(GLFWwindow *window, Shader &shader, float &d);
 
 // Main
 int main() {
@@ -58,10 +58,10 @@ int main() {
 
     float vertices[] = {
             // positions          // colors           // texture1 coords
-            0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   0.55f, 0.55f, // top right
-            0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   0.55f, 0.45f, // bottom right
-            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.45f, 0.45f, // bottom left
-            -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.45f, 0.55f  // top left
+            0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+            0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+            -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
     };
 
     unsigned int indices[] = {
@@ -79,7 +79,6 @@ int main() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
-
 
     // Bind VAOs
     glBindVertexArray(VAO);
@@ -147,9 +146,11 @@ int main() {
 
     // -------- RENDERING
     // Uniform assignment
+    float mixValue = 0.2f;
     ourShader.use();
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
+    ourShader.setFloat("mixValue", mixValue);
 
     // Framerate/Frametiming
     double t_0 = glfwGetTime();
@@ -176,7 +177,7 @@ int main() {
         t_0 = t_1;
 
         // Input
-        processInput(window, ourShader);
+        processInput(window, ourShader, mixValue);
 
         // Rendering logic
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -190,6 +191,7 @@ int main() {
 
         // Activate the program
         ourShader.use();
+        ourShader.setFloat("mixValue", mixValue);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
@@ -216,11 +218,21 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 // Input processing
-void processInput(GLFWwindow *window, Shader &shader) {
+void processInput(GLFWwindow *window, Shader &shader, float &d) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
     if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS) {
         shader.update();
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        d += 0.1f;
+        if (d > 1.0f)
+            d = 1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        d -= 0.1f;
+        if (d < 0.0f)
+            d = 0.0f;
     }
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
