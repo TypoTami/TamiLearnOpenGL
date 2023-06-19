@@ -3,13 +3,16 @@ project(TamiOpenGL)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_subdirectory(glfw)
-include_directories(glad/include)
-
 add_executable(
         TamiOpenGL
         main.cpp
         glad/src/glad.c
         shader.h stb_image.cpp)
 
-target_link_libraries(TamiOpenGL glfw)
+#find_package(glm CONFIG REQUIRED)
+
+add_subdirectory(glm)
+add_subdirectory(glfw)
+include_directories(glad/include)
+
+target_link_libraries(TamiOpenGL PRIVATE glfw glm::glm)
