@@ -7,7 +7,7 @@ add_executable(
         TamiOpenGL
         main.cpp
         glad/src/glad.c
-        shader.h stb_image.cpp)
+        shader.h stb_image.cpp util.h)
 
 #find_package(glm CONFIG REQUIRED)
 
