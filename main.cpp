@@ -139,20 +139,29 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load image
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load(R"(D:\CLionProjects\TamiOpenGL\awesomeface.png)", &width, &height, &nrChannels, 0);
+    data = stbi_load(R"(D:\CLionProjects\TamiOpenGL\pain.jpg)", &width, &height, &nrChannels, 0);
     if (data) {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     } else {
         std::cout << "Failed to load texture2" << std::endl;
     }
     stbi_image_free(data);
 
+    // -------- TRANSLATION
+    // Define 4x4 Identity matrix
+    glm::mat4 trans = glm::mat4(1.0f);
+    // Apply a rotation matrix apply the identity matrix. Then apply a scale matrix on the result
+    trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+    trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+
     // -------- RENDERING
     // Uniform assignment
     ourShader.use();
     ourShader.setInt("texture1", 0);
     ourShader.setInt("texture2", 1);
+    unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
     // Framerate/Frametiming
     double t_0 = glfwGetTime();
