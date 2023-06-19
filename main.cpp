@@ -149,6 +149,18 @@ int main() {
     }
     stbi_image_free(data);
 
+    // -------- TRANSLATION
+    // Create model matrix starting as a 4x4 identity matrix
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+    // View matrix
+    glm::mat4 view = glm::mat4(1.0f);
+        // We translate opposite of where we want to move (from the camera PoV)
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    // Projection matrix
+    glm::mat4 projection;
+    projection = glm::perspective(glm::radians(45.0f), 800.f / 600.f, 0.1f, 100.f);
+
     // -------- RENDERING
     // Uniform assignment
     ourShader.use();
@@ -192,16 +204,11 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // -------- TRANSLATION
-        // Define 4x4 Identity matrix
-        glm::mat4 trans = glm::mat4(1.0f);
-        // Apply a translation matrix to the identity matrix. Then apply a rotation matrix on the result
-        trans = glm::translate(trans, glm::vec3(0.5, -0.5, 0.0));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0, 0.0, 1.0));
-
         // Activate the program
         ourShader.use();
-        ourShader.setMat4("transform", trans);
+        ourShader.setMat4("model", model);
+        ourShader.setMat4("view", view);
+        ourShader.setMat4("projection", projection);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 

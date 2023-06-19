@@ -6,11 +6,14 @@ layout (location = 2) in vec2 aTexCoord;// The texture coordinates has attribute
 out vec3 ourColour;
 out vec2 TexCoord;
 
-uniform mat4 transform;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main()
 {
-    gl_Position = transform * vec4(aPos, 1.0f);
+    // Note that matrix multiplicatoin is read right to left
+    gl_Position = projection * view * model * vec4(aPos, 1.0f);
     ourColour = aColour;
     TexCoord = aTexCoord;
 }
