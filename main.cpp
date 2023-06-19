@@ -205,6 +205,14 @@ int main() {
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
+        trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(-0.2, 0.3, 0.0));
+        trans = glm::scale(trans, glm::vec3(sinf((float)glfwGetTime())));
+        ourShader.setMat4("transform", trans);
+
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+
         // Check and call events, afterward swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
