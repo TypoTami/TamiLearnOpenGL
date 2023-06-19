@@ -50,6 +50,8 @@ int main() {
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
+    // Configure global OpenGL state
+    glEnable(GL_DEPTH_TEST);
 
     // Shaders
     Shader ourShader(
@@ -59,14 +61,6 @@ int main() {
 
     // -------- VERTEX INPUT
     // Define vertices
-
-//    float vertices[] = {
-//            // positions          // colors           // texture1 coords
-//            0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-//            0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-//            -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-//            -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left
-//    };
 
     float vertices[] = {
             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -235,6 +229,7 @@ int main() {
         // Rendering logic
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Bind textures to texture1 units
         glActiveTexture(GL_TEXTURE0);
