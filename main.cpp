@@ -202,8 +202,11 @@ int main() {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
     // We translate opposite of where we want to move (from the camera PoV)
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(45.0f), 800.f / 600.f, 0.1f, 100.f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -8.0f));
+    projection = glm::perspective(glm::radians(35.0f), 800.f / 600.f, 0.1f, 100.f);
+
+//    view = glm::translate(view, glm::vec3(-1.f, 2.0f, 0.0f));
+//    view = glm::rotate(view, glm::radians(20.0f), glm::vec3(-1.7f, -1.0f, 0.0f));
 
     // -------- RENDERING
     // Uniform assignment
@@ -260,7 +263,14 @@ int main() {
             glm::mat4 model = glm::mat4(1.0f);
             model = glm::translate(model, cubePositions[i]);
             float angle = 20.0f * i;
-            model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.3f));
+
+            if (i%3 == 0) {
+                model = glm::rotate(model, glm::radians(angle)+(float)glfwGetTime()*glm::radians(50.0f), glm::vec3(1.0f, 0.3f, 0.3f));
+            } else {
+
+                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.3f));
+            }
+
             ourShader.setMat4("model", model);
 
             glDrawArrays(GL_TRIANGLES, 0, 36);
