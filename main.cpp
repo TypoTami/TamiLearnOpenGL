@@ -55,8 +55,8 @@ int main() {
 
     // Shaders
     Shader ourShader(
-            R"(D:\CLionProjects\TamiOpenGL\shaders\tri.glsl)",
-            R"(D:\CLionProjects\TamiOpenGL\shaders\tri.frag)"
+            R"(/home/tami/Documents/CLionProjects/TamiOpenGL/shaders/tri.glsl)",
+            R"(/home/tami/Documents/CLionProjects/TamiOpenGL/shaders/tri.frag)"
             );
 
     // -------- VERTEX INPUT
@@ -170,7 +170,7 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load image
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load(R"(D:\CLionProjects\TamiOpenGL\container.jpg)", &width, &height, &nrChannels, 0);
+    data = stbi_load(R"(/home/tami/Documents/CLionProjects/TamiOpenGL/container.jpg)", &width, &height, &nrChannels, 0);
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -189,7 +189,7 @@ int main() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // Load image
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load(R"(D:\CLionProjects\TamiOpenGL\pain.jpg)", &width, &height, &nrChannels, 0);
+    data = stbi_load(R"(/home/tami/Documents/CLionProjects/TamiOpenGL/pain.jpg)", &width, &height, &nrChannels, 0);
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
