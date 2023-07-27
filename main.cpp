@@ -111,6 +111,20 @@ int main() {
             1, 2, 3
     };
 
+    glm::vec3 cubePositions[] = {
+            glm::vec3( 0.0f,  0.0f,  0.0f),
+            glm::vec3( 2.0f,  5.0f, -15.0f),
+            glm::vec3(-1.5f, -2.2f, -2.5f),
+            glm::vec3(-3.8f, -2.0f, -12.3f),
+            glm::vec3( 2.4f, -0.4f, -3.5f),
+            glm::vec3(-1.7f,  3.0f, -7.5f),
+            glm::vec3( 1.3f, -2.0f, -2.5f),
+            glm::vec3( 1.5f,  2.0f, -2.5f),
+            glm::vec3( 1.5f,  0.2f, -1.5f),
+            glm::vec3(-1.3f,  1.0f, -1.5f)
+    };
+
+
     // Create a VERTEX BUFFER OBJECT for GPU memory management
     // Create a Vertex Array Object (VAO)
     // Create an Element Buffer Object (EBO)
@@ -185,13 +199,14 @@ int main() {
     stbi_image_free(data);
 
     // -------- TRANSLATION
-    glm::mat4 model = glm::mat4(1.0f);
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
-    model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
     // We translate opposite of where we want to move (from the camera PoV)
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-    projection = glm::perspective(glm::radians(45.0f), 800.f / 600.f, 0.1f, 100.f);
+    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -8.0f));
+    projection = glm::perspective(glm::radians(35.0f), 800.f / 600.f, 0.1f, 100.f);
+
+//    view = glm::translate(view, glm::vec3(-1.f, 2.0f, 0.0f));
+//    view = glm::rotate(view, glm::radians(20.0f), glm::vec3(-1.7f, -1.0f, 0.0f));
 
     // -------- RENDERING
     // Uniform assignment
@@ -237,18 +252,29 @@ int main() {
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, texture2);
 
-        // Update model matrix
-        model = glm::mat4(1.0f);
-        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(.5f, 1.f, 0.f));
-
         // Activate the program
         ourShader.use();
-        ourShader.setMat4("model", model);
         ourShader.setMat4("view", view);
         ourShader.setMat4("projection", projection);
         ourShader.setFloat("mixVal", sinf((float)glfwGetTime() * 2.f) / 4.f + .5f);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        for (unsigned int i = 0; i < 10; i++) {
+            // Update model matrix
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::translate(model, cubePositions[i]);
+            float angle = 20.0f * i;
+
+            if (i%3 == 0) {
+                model = glm::rotate(model, glm::radians(angle)+(float)glfwGetTime()*glm::radians(50.0f), glm::vec3(1.0f, 0.3f, 0.3f));
+            } else {
+
+                model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.3f));
+            }
+
+            ourShader.setMat4("model", model);
+
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
 //        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
         // Check and call events, afterward swap buffers
