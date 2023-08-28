@@ -238,6 +238,23 @@ int main() {
         glfwSetWindowTitle(window, title.c_str());
         t_0 = t_1;
 
+        // Camera
+        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+        glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+        glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget); // Points in reverse direction!
+
+        // Right axis in local space relative to camera
+        // up, relative to world space
+        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        // Cross world up, by direction of camera gives us the positive x-axis of the local space relative to the camera
+        glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+        glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+        // With these vectors, we can now reliably create a LookAt matrix
+        const float radius = 10.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ= cos(glfwGetTime()) * radius;
+        view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
         // Input
         processInput(window, ourShader);
 
